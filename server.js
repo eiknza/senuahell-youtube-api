@@ -74,6 +74,25 @@ async function getVideos() {
   }).filter(Boolean);
 }
 
+app.get("/api/youtube/channel", async (_req, res) => {
+  if (!API_KEY) return res.status(500).json({ error: "Render ortam değişkenlerinde YOUTUBE_API_KEY tanımlanmamış." });
+  try {
+    const result = await youtube("channels", { part: "snippet,statistics", forHandle: CHANNEL_HANDLE });
+    const channel = result.items?.[0];
+    if (!channel) return res.status(404).json({ error: `@${CHANNEL_HANDLE} kanalı bulunamadı.` });
+    return res.json({
+      title: channel.snippet?.title || CHANNEL_HANDLE,
+      avatar: channel.snippet?.thumbnails?.high?.url || channel.snippet?.thumbnails?.medium?.url || channel.snippet?.thumbnails?.default?.url || "",
+      subscribers: channel.statistics?.hiddenSubscriberCount ? null : channel.statistics?.subscriberCount ?? null,
+      views: channel.statistics?.viewCount ?? null,
+      videoCount: channel.statistics?.videoCount ?? null
+    });
+  } catch (error) {
+    console.error("YouTube channel API error:", error.message);
+    return res.status(error.status || 502).json({ error: error.message || "YouTube kanal bilgileri alınamadı." });
+  }
+});
+
 app.get("/api/youtube/videos", async (_req, res) => {
   if (!API_KEY) return res.status(500).json({ error: "Render ortam değişkenlerinde YOUTUBE_API_KEY tanımlanmamış." });
   if (cache.items && Date.now() < cache.expires) return res.json({ items: cache.items, cached: true });
