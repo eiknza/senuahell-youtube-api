@@ -1,1 +1,1 @@
-window.YOUTUBE_API_BASE = "https://YOUR-RENDER-SERVICE.onrender.com";
+window.YOUTUBE_API_BASE = "https://senuahell-youtube-api.onrender.com";
